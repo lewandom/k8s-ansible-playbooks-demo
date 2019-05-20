@@ -1,0 +1,28 @@
+- name: Deploy Wordpress database
+  import_role:
+    name: mysql
+    tasks_from: deploy
+  vars:
+    mysql_name: "{{ wordpress_db_name }}"
+  when: wordpress_deploy_db|bool
+  tags:
+  - wordpress_db
+
+- name: Flush handlers
+  meta: flush_handlers
+
+- name: Create Wordpress resources
+  command: kubectl apply -f -
+  args:
+    stdin: "{{ lookup('template', item + '.yaml.j2') }}"
+  register: deploy_wordpress_svc_results
+  changed_when: >-
+    deploy_wordpress_svc_results.stdout_lines
+      | reject('match', '^.* unchanged$') | list | length > 0
+  loop:
+  - wordpress_pvc
+  - wordpress_deployment
+  - wordpress_svc
+  notify:
+  - Wait for Wordpress service to become available
+  - Wait for Wordpress service to listen on external address

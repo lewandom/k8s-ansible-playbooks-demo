@@ -1,0 +1,43 @@
+- name: Delete Wordpress pods
+  command: kubectl delete -f -
+  args:
+    stdin: "{{ lookup('template', 'wordpress_deployment.yaml.j2') }}"
+  register: undeploy_wordpress_pods_results
+  changed_when: >-
+    undeploy_wordpress_pods_results.stdout_lines
+      | select('match', '^.* deleted$') | list | length > 0
+  failed_when: >-
+    undeploy_wordpress_pods_results.rc != 0 and
+    undeploy_wordpress_pods_results.stdout_lines
+      | reject('match', '^.* not found') | list | length > 0
+  notify:
+  - Wait for Wordpress service to become unavailable
+
+- name: Flush handlers
+  meta: flush_handlers
+
+- name: Delete remaining Wordpress resources
+  command: kubectl delete -f -
+  args:
+    stdin: "{{ lookup('template', item + '.yaml.j2') }}"
+  register: undeploy_wordpress_svc_results
+  changed_when: >-
+    undeploy_wordpress_svc_results.stdout_lines
+      | select('match', '^.* deleted$') | list | length > 0
+  failed_when: >-
+    undeploy_wordpress_svc_results.rc != 0 and
+    undeploy_wordpress_svc_results.stdout_lines
+      | reject('match', '^.* not found') | list | length > 0
+  loop:
+  - wordpress_svc
+  - wordpress_pvc
+
+- name: Undeploy Wordpress database
+  import_role:
+    name: mysql
+    tasks_from: undeploy
+  vars:
+    mysql_name: "{{ wordpress_db_name }}"
+  when: wordpress_deploy_db|bool
+  tags:
+  - wordpress_db

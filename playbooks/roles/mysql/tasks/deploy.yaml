@@ -1,0 +1,15 @@
+- name: Create MySQL resources
+  command: kubectl apply -f -
+  args:
+    stdin: "{{ lookup('template', item + '.yaml.j2') }}"
+  register: deploy_mysql_svc_results
+  changed_when: >-
+    deploy_mysql_svc_results.stdout_lines
+      | reject('match', '^.* unchanged$') | list | length > 0
+  loop:
+  - mysql_pvc
+  - mysql_secret
+  - mysql_deployment
+  - mysql_svc
+  notify:
+  - Wait for MySQL service to become available

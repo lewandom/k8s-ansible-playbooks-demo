@@ -1,0 +1,15 @@
+- name: Wait for MySQL service to become available
+  command: kubectl get deploy {{ mysql_name }} -o jsonpath={.status.readyReplicas}
+  register: mysql_ready_replicas
+  until: mysql_ready_replicas.stdout|int == 1
+  retries: 60
+  delay: 5
+  changed_when: no
+
+- name: Wait for MySQL service to become unavailable
+  command: kubectl get pods -l {{ ('app=%s' % mysql_name) | quote }}
+  register: mysql_pods_results
+  until: mysql_pods_results.stdout_lines | length == 0
+  retries: 60
+  delay: 5
+  changed_when: no

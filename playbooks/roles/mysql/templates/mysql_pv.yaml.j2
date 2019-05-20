@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "{{ mysql_name }}-local-volume"
+  labels:
+    app: "{{ mysql_name }}"
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+  - ReadWriteOnce
+  hostPath:
+    path: "/tmp/data/{{ mysql_name }}"
+  persistentVolumeReclaimPolicy: Recycle

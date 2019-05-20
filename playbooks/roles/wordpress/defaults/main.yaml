@@ -1,0 +1,12 @@
+wordpress_image_name: wordpress
+wordpress_image_version: latest
+wordpress_image: "{{ wordpress_image_name }}:{{ wordpress_image_version }}"
+
+wordpress_name: wordpress
+wordpress_external_port: 30180
+wordpress_use_local_storage: yes
+
+wordpress_deploy_db: yes
+wordpress_db_name: wordpress-mysql
+wordpress_db_pass_secret_name: wordpress-mysql-pass
+wordpress_db_pass_secret_key: root_password

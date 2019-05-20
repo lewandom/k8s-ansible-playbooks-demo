@@ -1,0 +1,9 @@
+- name: Create MySQL local persistent volume
+  command: kubectl apply -f -
+  args:
+    stdin: "{{ lookup('template', 'mysql_pv.yaml.j2') }}"
+  register: deploy_mysql_local_pv_result
+  changed_when: >-
+    deploy_mysql_local_pv_result.stdout_lines
+      | reject('match', '^.* unchanged$') | list | length > 0
+  when: mysql_use_local_storage

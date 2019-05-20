@@ -1,0 +1,27 @@
+- name: Wait for Wordpress service to become available
+  command: >-
+    kubectl get deploy {{ wordpress_name | quote }}
+      -o jsonpath={.status.readyReplicas}
+  register: wordpress_ready_replicas
+  until: wordpress_ready_replicas.stdout|int == 1
+  retries: 60
+  delay: 5
+  changed_when: no
+
+- name: Wait for Wordpress service to become unavailable
+  command: kubectl get pods -l {{ ('app=%s' % wordpress_name) | quote }}
+  register: wordpress_pods_results
+  until: wordpress_pods_results.stdout_lines | length == 0
+  retries: 60
+  delay: 5
+  changed_when: no
+
+- name: Wait for Wordpress service to listen on external address
+  uri:
+    url: http://{{ kube_svc_external_access }}:{{ wordpress_external_port }}
+    method: GET
+    status_code: 200
+  register: wordpress_web_request
+  until: wordpress_web_request.status == 200
+  retries: 10
+  delay: 5

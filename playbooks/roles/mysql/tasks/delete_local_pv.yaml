@@ -1,0 +1,13 @@
+- name: Delete MySQL local persistent volume
+  command: kubectl delete -f -
+  args:
+    stdin: "{{ lookup('template', 'mysql_pv.yaml.j2') }}"
+  register: undeploy_mysql_local_pv_result
+  changed_when: >-
+    undeploy_mysql_local_pv_result.stdout_lines
+      | select('match', '^.* deleted$') | list | length > 0
+  failed_when: >-
+    undeploy_mysql_local_pv_result.rc != 0 and
+    undeploy_mysql_local_pv_result.stdout_lines
+      | reject('match', '^.* not found') | list | length > 0
+  when: mysql_use_local_storage

@@ -1,0 +1,3 @@
+[submodule "Scalable-WordPress-deployment-on-Kubernetes"]
+	path = Scalable-WordPress-deployment-on-Kubernetes
+	url = git@github.com:IBM/Scalable-WordPress-deployment-on-Kubernetes.git

@@ -1,0 +1,34 @@
+- name: Delete MySQL pods
+  command: kubectl delete -f -
+  args:
+    stdin: "{{ lookup('template', 'mysql_deployment.yaml.j2') }}"
+  register: undeploy_mysql_pods_results
+  changed_when: >-
+    undeploy_mysql_pods_results.stdout_lines
+      | select('match', '^.* deleted$') | list | length > 0
+  failed_when: >-
+    undeploy_mysql_pods_results.rc != 0 and
+    undeploy_mysql_pods_results.stdout_lines
+      | reject('match', '^.* not found') | list | length > 0
+  notify:
+  - Wait for MySQL service to become unavailable
+
+- name: Flush handlers
+  meta: flush_handlers
+
+- name: Delete remaining MySQL resources
+  command: kubectl delete -f -
+  args:
+    stdin: "{{ lookup('template', item + '.yaml.j2') }}"
+  register: undeploy_mysql_svc_results
+  changed_when: >-
+    undeploy_mysql_svc_results.stdout_lines
+      | select('match', '^.* deleted$') | list | length > 0
+  failed_when: >-
+    undeploy_mysql_svc_results.rc != 0 and
+    undeploy_mysql_svc_results.stdout_lines
+      | reject('match', '^.* not found') | list | length > 0
+  loop:
+  - mysql_svc
+  - mysql_pvc
+  - mysql_secret

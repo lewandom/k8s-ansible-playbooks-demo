@@ -1,0 +1,10 @@
+all:
+  children:
+    mycluster:
+      hosts:
+        deployment_coordinator:
+          ansible_host: localhost
+          ansible_connection: local
+      vars:
+        kube_svc_external_access: mycluster.example.com
+        kube_config_file: "{{ ansible_env.HOME }}/.kube/config"

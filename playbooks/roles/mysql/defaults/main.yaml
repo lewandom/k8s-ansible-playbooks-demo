@@ -1,0 +1,8 @@
+mysql_image_name: mysql
+mysql_image_version: '5.6'
+mysql_image: "{{ mysql_image_name }}:{{ mysql_image_version }}"
+
+mysql_name: mysql
+
+mysql_root_password: "{{ lookup('password', '/tmp/mysql-pass chars=ascii_letters') }}"
+mysql_use_local_storage: yes

@@ -1,0 +1,23 @@
+- name: Undeploy Wordpress service
+  hosts: deployment_coordinator
+
+  environment:
+    KUBECONFIG: >-
+      {{ kubeconfig_file | default(ansible_env['KUBECONFIG']
+                           if 'KUBECONFIG' in ansible_env else '') }}
+
+  tasks:
+
+  - name: Undeploy Wordpress service
+    import_role:
+      name: wordpress
+      tasks_from: undeploy
+    tags:
+    - wordpress_service
+
+  - name: Delete Wordpress local persistent volumes
+    import_role:
+      name: wordpress
+      tasks_from: delete_local_pv
+    tags:
+    - wordpress_local_pv

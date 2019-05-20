@@ -1,0 +1,19 @@
+- name: Create Wordpress database local persistent volume
+  import_role:
+    name: mysql
+    tasks_from: create_local_pv
+  vars:
+    mysql_name: "{{ wordpress_db_name }}"
+  when: wordpress_deploy_db|bool
+  tags:
+  - wordpress_db
+
+- name: Create Wordpress local persistent volume
+  command: kubectl apply -f -
+  args:
+    stdin: "{{ lookup('template', 'wordpress_pv.yaml.j2') }}"
+  register: deploy_wordpress_local_pv_result
+  changed_when: >-
+    deploy_wordpress_local_pv_result.stdout_lines
+      | reject('match', '^.* unchanged$') | list | length > 0
+  when: wordpress_use_local_storage

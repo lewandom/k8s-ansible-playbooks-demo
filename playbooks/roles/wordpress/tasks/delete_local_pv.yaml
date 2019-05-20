@@ -1,0 +1,23 @@
+- name: Delete Wordpress local persistent volume
+  command: kubectl delete -f -
+  args:
+    stdin: "{{ lookup('template', 'wordpress_pv.yaml.j2') }}"
+  register: undeploy_wordpress_local_pv_result
+  changed_when: >-
+    undeploy_wordpress_local_pv_result.stdout_lines
+      | select('match', '^.* deleted$') | list | length > 0
+  failed_when: >-
+    undeploy_wordpress_local_pv_result.rc != 0 and
+    undeploy_wordpress_local_pv_result.stdout_lines
+      | reject('match', '^.* not found') | list | length > 0
+  when: wordpress_use_local_storage
+
+- name: Delete Wordpress database local persistent volume
+  import_role:
+    name: mysql
+    tasks_from: delete_local_pv
+  vars:
+    mysql_name: "{{ wordpress_db_name }}"
+  when: wordpress_deploy_db|bool
+  tags:
+  - wordpress_db

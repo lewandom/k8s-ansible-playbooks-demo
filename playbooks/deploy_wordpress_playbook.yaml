@@ -1,0 +1,23 @@
+- name: Deploy Wordpress service
+  hosts: deployment_coordinator
+
+  environment:
+    KUBECONFIG: >-
+      {{ kubeconfig_file | default(ansible_env['KUBECONFIG']
+                           if 'KUBECONFIG' in ansible_env else '') }}
+
+  tasks:
+
+  - name: Create Wordpress local persistent volumes
+    import_role:
+      name: wordpress
+      tasks_from: create_local_pv
+    tags:
+    - wordpress_local_pv
+
+  - name: Deploy Wordpress service
+    import_role:
+      name: wordpress
+      tasks_from: deploy
+    tags:
+    - wordpress_service
