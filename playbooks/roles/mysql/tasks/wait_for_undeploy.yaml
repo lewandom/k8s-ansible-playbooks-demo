@@ -1,0 +1,7 @@
+- name: Wait for MySQL service to undeploy
+  command: kubectl get deploy {{ mysql_name | quote }} --ignore-not-found
+  register: mysql_get_deployment_result
+  until: not mysql_get_deployment_result.stdout
+  retries: 60
+  delay: 5
+  changed_when: no

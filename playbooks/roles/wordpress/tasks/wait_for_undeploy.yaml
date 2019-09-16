@@ -1,0 +1,7 @@
+- name: Wait for Wordpress service to undeploy
+  command: kubectl get deploy {{ wordpress_name | quote }} --ignore-not-found
+  register: wordpress_get_deployment_result
+  until: not wordpress_get_deployment_result.stdout
+  retries: 60
+  delay: 5
+  changed_when: no

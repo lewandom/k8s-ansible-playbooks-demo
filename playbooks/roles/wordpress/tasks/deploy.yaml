@@ -1,15 +1,17 @@
 - name: Deploy Wordpress database
-  import_role:
-    name: mysql
-    tasks_from: deploy
+  block:
+  - name: Deploy Wordpress database
+    import_role:
+      name: mysql
+      tasks_from: deploy
+  - import_role:
+      name: mysql
+      tasks_from: wait_for_rollout
   vars:
     mysql_name: "{{ wordpress_db_name }}"
   when: wordpress_deploy_db|bool
   tags:
   - wordpress_db
-
-- name: Flush handlers
-  meta: flush_handlers
 
 - name: Create Wordpress resources
   command: kubectl apply -f -
@@ -24,5 +26,5 @@
   - wordpress_deployment
   - wordpress_svc
   notify:
-  - Wait for Wordpress service to become available
+  - Wait for Wordpress service to roll out
   - Wait for Wordpress service to listen on external address

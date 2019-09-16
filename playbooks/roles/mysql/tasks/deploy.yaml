@@ -12,4 +12,4 @@
   - mysql_deployment
   - mysql_svc
   notify:
-  - Wait for MySQL service to become available
+  - Wait for MySQL service to roll out
